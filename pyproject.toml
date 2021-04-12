@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "warehouse"
+version = "0.1.0"
+description = "Example application to manage a warehouses inventory"
+authors = ["Jorge Florian <jafn28@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+Django = "^3.2"
+djangorestframework = "^3.12.4"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
