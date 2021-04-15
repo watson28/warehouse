@@ -78,9 +78,9 @@ WSGI_APPLICATION = 'warehouse.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'warehouse',
-        'USER': os.getenv('DB_USER', 'warehouse'),
-        'PASSWORD': os.getenv('DB_PASSWORD', '1234'),
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         "HOST": os.getenv('DB_HOST', 'localhost'),
         'ATOMIC_REQUESTS': True,
     }
