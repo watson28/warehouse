@@ -6,11 +6,15 @@ class InvalidDataUploadError(Exception):
         self.errors = errors
         super().__init__('\n'.join(self.errors))
 
+class InvalidUploadAttributeError(InvalidDataUploadError):
+    def __init__(self, context, attribute, error):
+        super().__init__(f'attribute {context}.{attribute}: {error}')
+
 
 class UploadParser:
     def parse_field(self, obj, field_name, obj_context):
         if field_name not in obj:
-            raise InvalidDataUploadError(f'attribute {obj_context}.{field_name}: not found')
+            raise InvalidUploadAttributeError(obj_context, field_name, 'not found')
 
         return obj[field_name]
 
@@ -19,7 +23,7 @@ class UploadParser:
         try:
             return int(value)
         except ValueError as exception:
-            raise InvalidDataUploadError(f'attribute {obj_context}.{field_name}: expected number') from exception
+            raise InvalidUploadAttributeError(obj_context, field_name, 'expected number') from exception
 
     def parse_string_field(self, obj, field_name, obj_context):
         value = self.parse_field(obj, field_name, obj_context)
@@ -31,7 +35,7 @@ class UploadParser:
     def parse_list_field(self, obj, field_name, obj_context):
         value = self.parse_field(obj, field_name, obj_context)
         if not isinstance(value, list):
-            raise InvalidDataUploadError(f'attribute {obj_context}.{field_name}: expected list')
+            raise InvalidUploadAttributeError(obj_context, field_name, 'expected list')
 
         return value
 
@@ -84,6 +88,9 @@ class ProductUploadParser:
     def _parse_product_requirement(self, obj, obj_context) -> CreateProductRequirementDTO:
         article_id = self._parser.parse_numeric_field(obj, 'art_id', obj_context)
         quantity = self._parser.parse_numeric_field(obj, 'amount_of', obj_context)
+
+        if quantity <= 0:
+            raise InvalidDataUploadError(obj_context, 'quantity', 'expected value greater than 0')
 
         return CreateProductRequirementDTO(article_id=article_id, quantity=quantity)
         

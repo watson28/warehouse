@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 class Article(models.Model):
     id = models.BigIntegerField(primary_key=True)
@@ -11,4 +12,4 @@ class Product(models.Model):
 class ProductRequirement(models.Model):
     article = models.ForeignKey(Article, on_delete=models.PROTECT)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='requirements')
-    quantity = models.PositiveIntegerField(null=False)
+    quantity = models.PositiveIntegerField(null=False, validators=[MinValueValidator(1)])
