@@ -51,7 +51,7 @@ class ProductBusiness:
     def validate_product_availability(self, product: ProductDTO):
         availability = self._get_product_availability(product.requirements)
         if availability == 0:
-            raise ProductNotAvailableError()
+            raise ProductNotAvailableError(product.id)
 
     def validate_product_requirement_articles_exist(self, products: List[CreateProductDTO]):
         product_requirements = flat_list([product.requirements for product in products])

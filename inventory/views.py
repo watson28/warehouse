@@ -75,7 +75,7 @@ class ProductsAvailabilityView(APIVieWithErrorHandling):
         )
 
 
-class SellProductView(APIView):
+class SellProductView(APIVieWithErrorHandling):
     def __init__(self, **kwargs):
         self._product_business = ProductBusiness()
         super().__init__(**kwargs)
