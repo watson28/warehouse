@@ -1,5 +1,7 @@
 from typing import List
 from dataclasses import asdict
+from django.db import transaction
+
 from .models import Article, ProductRequirement, Product
 from .business_logic.data_transfer_objects import (
     CreateProductDTO,
@@ -24,8 +26,9 @@ class ArticleRepository:
         existing_articles = list(filter(lambda article: article.id in existing_ids, article_models))
         not_existing_articles = list(filter(lambda article: article.id in no_existing_ids, article_models))
 
-        Article.objects.bulk_update(existing_articles, fields=['name', 'stock'])
-        Article.objects.bulk_create(not_existing_articles)
+        with transaction.atomic():
+            Article.objects.bulk_update(existing_articles, fields=['name', 'stock'])
+            Article.objects.bulk_create(not_existing_articles)
 
     def update_articles_stock(self, new_article_stocks: dict):
         articles = [Article(id=id, stock=stock) for (id, stock) in new_article_stocks.items()]
@@ -42,14 +45,16 @@ class ProductRepository:
 
     def create_products(self, products: List[CreateProductDTO]):
         product_models = map(lambda p: Product(name=p.name), products)
-        created_product_models = Product.objects.bulk_create(product_models)
 
-        requirement_models = list(map(
-          lambda zip_tuple: self._map_requirement(zip_tuple[0].requirements, zip_tuple[1]),
-          zip(products, created_product_models)
-        ))
-
-        ProductRequirement.objects.bulk_create(flat_list(requirement_models))
+        with transaction.atomic():
+            created_product_models = Product.objects.bulk_create(product_models)
+            requirement_models = list(
+                map(
+                    lambda zip_tuple: self._map_requirement(zip_tuple[0].requirements, zip_tuple[1]),
+                    zip(products, created_product_models)
+                )
+            )
+            ProductRequirement.objects.bulk_create(flat_list(requirement_models))
 
     def get_products_with_requirement_details(self) -> List[ProductDTO]:
         #TODO: implement pagination to reduce the size of the information in memory.
