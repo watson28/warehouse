@@ -27,6 +27,10 @@ class ArticleRepository:
         Article.objects.bulk_update(existing_articles, fields=['name', 'stock'])
         Article.objects.bulk_create(not_existing_articles)
 
+    def update_articles_stock(self, new_article_stocks: dict):
+        articles = [Article(id=id, stock=stock) for (id, stock) in new_article_stocks.items()]
+        Article.objects.bulk_update(articles, fields=['stock'])
+
 
 class ProductRepository:
     def partition_names_by_existence(self, product_names: List[str]):
@@ -54,17 +58,30 @@ class ProductRepository:
             .prefetch_related('requirements') \
             .prefetch_related('requirements__article')
 
+        return list(map(self._product_with_requirements_to_dto, products))
+
+    def get_product_with_requirement_details(self, product_id: int):
+        product = Product.objects \
+            .prefetch_related('requirements') \
+            .prefetch_related('requirements__article') \
+            .get(id=product_id)
+
+        return self._product_with_requirements_to_dto(product)
+
+    def _product_with_requirements_to_dto(self, product: Product):
         requirements_to_dto = lambda requirement: ProductRequirementDTO(
             quantity=requirement.quantity,
-            article = Article(name=requirement.article.name, stock=requirement.article.stock)
+            article = Article(
+                id=requirement.article.id,
+                name=requirement.article.name,
+                stock=requirement.article.stock
+            )
         )
-        product_to_dto = lambda product: ProductDTO(
+        return ProductDTO(
             id=product.id,
             name=product.name,
             requirements=list(map(requirements_to_dto, product.requirements.all()))
         )
- 
-        return list(map(product_to_dto, products))
 
     def _map_requirement(self, product_requirements: List[CreateProductRequirementDTO], created_product: Product):
         return map(

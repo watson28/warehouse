@@ -1,7 +1,14 @@
 from typing import List
 from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
 from ..repositories import ArticleRepository, ProductRepository
-from .data_transfer_objects import CreateProductDTO, ArticleDTO, ProductAvailability, ProductRequirementDTO
+from .data_transfer_objects import (
+    CreateProductDTO,
+    ArticleDTO,
+    ProductAvailability,
+    ProductDTO,
+    ProductRequirementDTO
+)
 
 class ArticleBusiness:
     def __init__(self):
@@ -33,8 +40,18 @@ class ProductBusiness:
             for product in products
         ]
 
-    def _get_product_availability(self, requirements: List[ProductRequirementDTO]) -> int:
-        return min([req.article.stock // req.quantity for req in requirements])
+    def sell_product(self, product_id: int):
+        try:
+            product = self._product_repository.get_product_with_requirement_details(product_id)
+            self.validate_product_availability(product)
+            self._reduce_article_stocks_from_requirements(product.requirements)
+        except ObjectDoesNotExist as exception:
+            raise ProductDoesNotExistException(product_id) from exception
+
+    def validate_product_availability(self, product: ProductDTO):
+        availability = self._get_product_availability(product.requirements)
+        if availability == 0:
+            raise ProductNotAvailableException()
 
     def validate_product_requirement_articles_exist(self, products: List[CreateProductDTO]):
         product_requirements = flat_list([product.requirements for product in products])
@@ -51,6 +68,16 @@ class ProductBusiness:
         if len(existing_names) > 0:
             raise ProductAlreadyExistException(*existing_names)
 
+    def _get_product_availability(self, requirements: List[ProductRequirementDTO]) -> int:
+        return min([req.article.stock // req.quantity for req in requirements])
+
+    def _reduce_article_stocks_from_requirements(self, requirements: List[ProductRequirementDTO]):
+        new_product_articles_stock = {
+            requirement.article.id: requirement.article.stock - requirement.quantity
+            for requirement in requirements
+        }
+        self._article_repository.update_articles_stock(new_product_articles_stock)
+
 
 class ProductAlreadyExistException(Exception):
     def __init__(self, *existing_product_names):
@@ -63,6 +90,13 @@ class ArticleNotExistException(Exception):
         self.no_existing_article_ids = no_existing_article_ids
         joined_ids = ','.join([str(id) for id in self.no_existing_article_ids])
         super().__init__(f'Articles dont exist with ids: {joined_ids}')
+
+class ProductNotAvailableException(Exception):
+    pass
+
+class ProductDoesNotExistException(Exception):
+    def __init__(self, product_id):
+        super().__init__(f'Product does not exist with id={product_id}')
 
 
 def flat_list(list_groups):

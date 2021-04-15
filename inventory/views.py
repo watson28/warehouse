@@ -5,8 +5,13 @@ from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from rest_framework import status
 
-from .business_logic.business_logic import ArticleBusiness, ProductBusiness, ArticleNotExistException, ProductAlreadyExistException
 from .business_logic.upload_parsers import ProductUploadParser, ArticleUploadParser, InvalidDataUploadException
+from .business_logic.business_logic import (
+    ArticleBusiness,
+    ProductBusiness,
+    ArticleNotExistException,
+    ProductAlreadyExistException
+)
 
 class JSONFileParser(FileUploadParser):
     media_type = 'application/json'
@@ -63,3 +68,14 @@ class ProductsAvailabilityView(APIView):
             [asdict(item) for item in products_availability],
             status=status.HTTP_200_OK
         )
+
+
+class SellProductView(APIView):
+    def __init__(self, **kwargs):
+        self._product_business = ProductBusiness()
+        super().__init__(**kwargs)
+
+    def post(self, request, product_id):
+        self._product_business.sell_product(product_id)
+
+        return Response(status=status.HTTP_200_OK)
