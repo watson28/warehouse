@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from rest_framework import status
 
-from .business_logic.business_logic import ArticleBusiness, ProductBusiness
+from .business_logic.business_logic import ArticleBusiness, ProductBusiness, ArticleNotExistException, ProductAlreadyExistException
 from .business_logic.upload_parsers import ProductUploadParser, ArticleUploadParser, InvalidDataUploadException
 
 class JSONFileParser(FileUploadParser):
@@ -41,7 +41,9 @@ class UploadProductsView(APIView):
             data = json.load(request.data['file'])
             products = self._product_upload_parser.parse(data)
             self._product_business.save_products(products)
-        except InvalidDataUploadException as exception:
+        except (InvalidDataUploadException, ) as exception:
             return Response({ 'errors': exception.errors }, status=status.HTTP_400_BAD_REQUEST)
+        except (ArticleNotExistException, ProductAlreadyExistException) as exception:
+            return Response({ 'errors': str(exception) }, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(True)

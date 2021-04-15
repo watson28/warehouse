@@ -1,4 +1,5 @@
 from typing import List
+from django.db import transaction
 from ..repositories import ArticleRepository, ProductRepository
 from .data_transfer_objects import CreateProductDTO, ArticleDTO
 
@@ -18,7 +19,8 @@ class ProductBusiness:
     def save_products(self, products: List[CreateProductDTO]):
         self.validate_product_names_not_exist(products)
         self.validate_product_requirement_articles_exist(products)
-        self._product_repository.create_products(products)
+        with transaction.atomic():
+            self._product_repository.create_products(products)
 
     def validate_product_requirement_articles_exist(self, products: List[CreateProductDTO]):
         product_requirements = flat_list([product.requirements for product in products])
@@ -45,7 +47,7 @@ class ProductAlreadyExistException(Exception):
 class ArticleNotExistException(Exception):
     def __init__(self, *no_existing_article_ids):
         self.no_existing_article_ids = no_existing_article_ids
-        joined_ids = ','.join(self.no_existing_article_ids)
+        joined_ids = ','.join([str(id) for id in self.no_existing_article_ids])
         super().__init__(f'Articles dont exist with ids: {joined_ids}')
 
 
