@@ -10,5 +10,5 @@ class Product(models.Model):
 
 class ProductRequirement(models.Model):
     article = models.ForeignKey(Article, on_delete=models.PROTECT)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='requirements')
     quantity = models.PositiveIntegerField(null=False)

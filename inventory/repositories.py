@@ -1,7 +1,13 @@
 from typing import List
 from dataclasses import asdict
 from .models import Article, ProductRequirement, Product
-from .business_logic.data_transfer_objects import CreateProductDTO, CreateProductRequirementDTO, ArticleDTO
+from .business_logic.data_transfer_objects import (
+    CreateProductDTO,
+    CreateProductRequirementDTO,
+    ArticleDTO,
+    ProductDTO,
+    ProductRequirementDTO
+)
 
 class ArticleRepository:
     def partition_ids_by_existence(self, article_ids: List[int]):
@@ -40,6 +46,25 @@ class ProductRepository:
         ))
 
         ProductRequirement.objects.bulk_create(flat_list(requirement_models))
+
+    def get_products_with_requirement_details(self) -> List[ProductDTO]:
+        #TODO: implement pagination to reduce the size of the information in memory.
+        #fetch products with their requirements and articles in three queries.
+        products = Product.objects.all() \
+            .prefetch_related('requirements') \
+            .prefetch_related('requirements__article')
+
+        requirements_to_dto = lambda requirement: ProductRequirementDTO(
+            quantity=requirement.quantity,
+            article = Article(name=requirement.article.name, stock=requirement.article.stock)
+        )
+        product_to_dto = lambda product: ProductDTO(
+            id=product.id,
+            name=product.name,
+            requirements=list(map(requirements_to_dto, product.requirements.all()))
+        )
+ 
+        return list(map(product_to_dto, products))
 
     def _map_requirement(self, product_requirements: List[CreateProductRequirementDTO], created_product: Product):
         return map(

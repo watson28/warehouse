@@ -1,7 +1,7 @@
 from typing import List
 from django.db import transaction
 from ..repositories import ArticleRepository, ProductRepository
-from .data_transfer_objects import CreateProductDTO, ArticleDTO
+from .data_transfer_objects import CreateProductDTO, ArticleDTO, ProductAvailability, ProductRequirementDTO
 
 class ArticleBusiness:
     def __init__(self):
@@ -21,6 +21,20 @@ class ProductBusiness:
         self.validate_product_requirement_articles_exist(products)
         with transaction.atomic():
             self._product_repository.create_products(products)
+
+    def get_products_availability(self) -> List[ProductAvailability]:
+        products = self._product_repository.get_products_with_requirement_details()
+        return [
+            ProductAvailability(
+                id=product.id,
+                name=product.name,
+                availability=self._get_product_availability(product.requirements)
+            )
+            for product in products
+        ]
+
+    def _get_product_availability(self, requirements: List[ProductRequirementDTO]) -> int:
+        return min([req.article.stock // req.quantity for req in requirements])
 
     def validate_product_requirement_articles_exist(self, products: List[CreateProductDTO]):
         product_requirements = flat_list([product.requirements for product in products])

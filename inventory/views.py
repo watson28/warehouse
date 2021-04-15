@@ -1,4 +1,5 @@
 import json
+from dataclasses import asdict
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
@@ -28,6 +29,7 @@ class UploadArticlesView(APIView):
 
         return Response(status=status.HTTP_201_CREATED)
 
+
 class UploadProductsView(APIView):
     parser_classes = [JSONFileParser]
 
@@ -47,3 +49,17 @@ class UploadProductsView(APIView):
             return Response({ 'errors': str(exception) }, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_201_CREATED)
+
+
+class ProductsAvailabilityView(APIView):
+    def __init__(self, **kwargs):
+        self._product_business = ProductBusiness()
+        super().__init__(**kwargs)
+
+    def get(self,request):
+        products_availability = self._product_business.get_products_availability()
+
+        return Response(
+            [asdict(item) for item in products_availability],
+            status=status.HTTP_200_OK
+        )
