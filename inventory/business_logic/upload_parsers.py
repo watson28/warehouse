@@ -1,7 +1,7 @@
 from typing import List
 from .data_transfer_objects import CreateProductDTO, CreateProductRequirementDTO, ArticleDTO
 
-class InvalidDataUploadException(Exception):
+class InvalidDataUploadError(Exception):
     def __init__(self, *errors):
         self.errors = errors
         super().__init__('\n'.join(self.errors))
@@ -10,7 +10,7 @@ class InvalidDataUploadException(Exception):
 class UploadParser:
     def parse_field(self, obj, field_name, obj_context):
         if field_name not in obj:
-            raise InvalidDataUploadException(f'attribute {obj_context}.{field_name}: not found')
+            raise InvalidDataUploadError(f'attribute {obj_context}.{field_name}: not found')
 
         return obj[field_name]
 
@@ -19,19 +19,19 @@ class UploadParser:
         try:
             return int(value)
         except ValueError as exception:
-            raise InvalidDataUploadException(f'attribute {obj_context}.{field_name}: expected number') from exception
+            raise InvalidDataUploadError(f'attribute {obj_context}.{field_name}: expected number') from exception
 
     def parse_string_field(self, obj, field_name, obj_context):
         value = self.parse_field(obj, field_name, obj_context)
         if not isinstance(value, str):
-            raise InvalidDataUploadException(f'attribute {obj_context}.{field_name}: expected string')
+            raise InvalidDataUploadError(f'attribute {obj_context}.{field_name}: expected string')
 
         return value.strip()
 
     def parse_list_field(self, obj, field_name, obj_context):
         value = self.parse_field(obj, field_name, obj_context)
         if not isinstance(value, list):
-            raise InvalidDataUploadException(f'attribute {obj_context}.{field_name}: expected list')
+            raise InvalidDataUploadError(f'attribute {obj_context}.{field_name}: expected list')
 
         return value
 
@@ -41,11 +41,11 @@ class UploadParser:
         for index, item in enumerate(obj_list):
             try:
                 parsed_items.append(parser_fn(item, f'{obj_context}[{index}]'))
-            except InvalidDataUploadException as exception:
+            except InvalidDataUploadError as exception:
                 format_errors.append(str(exception))
 
             if len(format_errors) > 0:
-                raise InvalidDataUploadException(*format_errors)
+                raise InvalidDataUploadError(*format_errors)
 
         return parsed_items
 
