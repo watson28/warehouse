@@ -8,6 +8,8 @@ authors = ["Jorge Florian <jafn28@gmail.com>"]
 python = "^3.7"
 Django = "^3.2"
 djangorestframework = "^3.12.4"
+wheel = "^0.36.2"
+psycopg2 = "^2.8.6"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.7.4"
