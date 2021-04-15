@@ -26,7 +26,7 @@ class UploadArticlesView(APIView):
         except InvalidDataUploadException as exception:
             return Response({ 'errors': exception.errors }, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(True)
+        return Response(status=status.HTTP_201_CREATED)
 
 class UploadProductsView(APIView):
     parser_classes = [JSONFileParser]
@@ -46,4 +46,4 @@ class UploadProductsView(APIView):
         except (ArticleNotExistException, ProductAlreadyExistException) as exception:
             return Response({ 'errors': str(exception) }, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(True)
+        return Response(status=status.HTTP_201_CREATED)
