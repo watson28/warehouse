@@ -8,10 +8,10 @@ The easiest way of running the application is using docker-compose.
 docker-compose up
 ```
 
-This will instance a Postgres DB and a Django web api.
+Docker-compose will instance a Postgres DB and a Django web API.
 
 ## How to use it
-The django project provides the following Web API endpoints to manage the warehouse:
+The Django project provides the following Web API endpoints to manage the warehouse:
 
 | URL                             | HTTP method | description |
 | ------------------------------- | ----------- | ----------- |
@@ -24,17 +24,17 @@ You can use the [Postman collection](https://www.postman.com/collection/) `wareh
 
 ## Application structure
 
-The Application uses [Django](https://www.djangoproject.com/) web framework. There are two modules: 'warehouse` and 'inventory'.
+The Application uses the [Django](https://www.djangoproject.com/) web framework. There are two modules: 'warehouse` and 'inventory'.
 
 'warehouse' module is the default module created by Django for the project's configuration.
 
-'inventory' module is where the actual functioanlity lives. The module is composed by several components:
+'inventory' module is where the actual functionality lives. Several components compose the module:
 - *urls.py*: is where the API endpoint configuration happens. It maps URLs / HTTP methods to controllers (Django views).
-- *views.py*: These are controllers that handle requests to the application. Their responsability is to handle the HTTP related communication work and to call business logic objects.
-- *business_logic.py*: This where the requirements of a business operation are implemented with the help of the repository layer. Provides high level API for business operations. They persist information, validate data based on business rules and return business data objects.
-- *upload_parsers.py*: objects used to transform serialized JSON objects to business data objects.
-- *business_data_objects.py*: Data objects used to tranport information between different layers in a business operation.
-- *repositories.py*: Abstract the complexy of complex queries to the DB and more importanly set a boundary to the use of ORM objects in order to avoid unresponsable uses of their methods.
+- *views.py*: These are controllers that handle requests to the application. Their responsibility is to manage the HTTP-related communication work and to call business logic objects.
+- *business_logic.py*: This where the requirements of a business operation implemented with the repository layer's help. They Provide high-level API for business operations. They persist information, validate data based on business rules, and return business data objects.
+- *upload_parsers.py*: Objects used to transform serialized JSON objects to business data objects.
+- *business_data_objects.py*: It contains data objects used for transporting information between different layers in a business operation.
+- *repositories.py*: It abstracts the complexity of complex queries to the DB and, more importantly, sets a boundary to using ORM objects to avoid unresponsible uses of their methods.
 - *models.py*: This is where the domain models live. They use Django ORM to implement constraints and persist the information in the DB.
 
 ## Future improvements
