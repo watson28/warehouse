@@ -5,12 +5,12 @@ from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from rest_framework import status
 
-from .business_logic.upload_parsers import (
+from .upload_parsers import (
     ProductUploadParser,
     ArticleUploadParser,
     InvalidDataUploadError
 )
-from .business_logic.business_logic import (
+from .business_logic import (
     ArticleBusiness,
     ProductBusiness,
     BusinessValidationError

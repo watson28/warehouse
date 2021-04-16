@@ -3,7 +3,7 @@ from dataclasses import asdict
 from django.db import transaction
 
 from .models import Article, ProductRequirement, Product
-from .business_logic.data_transfer_objects import (
+from .data_business_objects import (
     CreateProductDTO,
     CreateProductRequirementDTO,
     ArticleDTO,

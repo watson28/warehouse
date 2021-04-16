@@ -1,5 +1,5 @@
 from typing import List
-from .data_transfer_objects import CreateProductDTO, CreateProductRequirementDTO, ArticleDTO
+from .data_business_objects import CreateProductDTO, CreateProductRequirementDTO, ArticleDTO
 
 class InvalidDataUploadError(Exception):
     def __init__(self, *errors):

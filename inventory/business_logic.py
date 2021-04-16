@@ -1,8 +1,8 @@
 from typing import List
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
-from ..repositories import ArticleRepository, ProductRepository
-from .data_transfer_objects import (
+from .repositories import ArticleRepository, ProductRepository
+from .data_business_objects import (
     CreateProductDTO,
     ArticleDTO,
     ProductAvailability,
