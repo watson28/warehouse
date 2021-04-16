@@ -2,34 +2,34 @@ from dataclasses import dataclass
 from typing import List
 
 @dataclass
-class CreateProductRequirementDTO:
+class CreateProductRequirementDBO:
     quantity: int
     article_id: int
 
 @dataclass
-class CreateProductDTO:
+class CreateProductDBO:
     name: str
-    requirements: List[CreateProductRequirementDTO]
+    requirements: List[CreateProductRequirementDBO]
 
 @dataclass
-class ArticleDTO:
+class ArticleDBO:
     id: int
     name: str
     stock: int
 
 @dataclass
-class ProductRequirementDTO:
+class ProductRequirementDBO:
     quantity: int
-    article: ArticleDTO
+    article: ArticleDBO
 
 @dataclass
-class ProductDTO:
+class ProductDBO:
     id: int
     name: str
-    requirements: List[ProductRequirementDTO]
+    requirements: List[ProductRequirementDBO]
 
 @dataclass
-class ProductAvailability:
+class ProductAvailabilityDBO:
     id: int
     name: str
     availability: int

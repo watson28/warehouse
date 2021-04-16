@@ -4,11 +4,11 @@ from django.db import transaction
 
 from .models import Article, ProductRequirement, Product
 from .data_business_objects import (
-    CreateProductDTO,
-    CreateProductRequirementDTO,
-    ArticleDTO,
-    ProductDTO,
-    ProductRequirementDTO
+    CreateProductDBO,
+    CreateProductRequirementDBO,
+    ArticleDBO,
+    ProductDBO,
+    ProductRequirementDBO
 )
 
 class ArticleRepository:
@@ -19,7 +19,7 @@ class ArticleRepository:
 
         return (existing_ids, no_existing_ids)
 
-    def save_articles(self, articles: List[ArticleDTO]):
+    def save_articles(self, articles: List[ArticleDBO]):
         article_models = list(map(lambda article: Article(**asdict(article)),articles))
         article_ids = list(map(lambda article: article.id, articles))
         (existing_ids, no_existing_ids) = self.partition_ids_by_existence(article_ids)
@@ -43,7 +43,7 @@ class ProductRepository:
 
         return (existing_names, no_existing_names)
 
-    def create_products(self, products: List[CreateProductDTO]):
+    def create_products(self, products: List[CreateProductDBO]):
         product_models = map(lambda p: Product(name=p.name), products)
 
         with transaction.atomic():
@@ -56,7 +56,7 @@ class ProductRepository:
             )
             ProductRequirement.objects.bulk_create(flat_list(requirement_models))
 
-    def get_products_with_requirement_details(self) -> List[ProductDTO]:
+    def get_products_with_requirement_details(self) -> List[ProductDBO]:
         #TODO: implement pagination to reduce the size of the information in memory.
         #fetch products with their requirements and articles in three queries.
         products = Product.objects.all() \
@@ -74,7 +74,7 @@ class ProductRepository:
         return self._product_with_requirements_to_dto(product)
 
     def _product_with_requirements_to_dto(self, product: Product):
-        requirements_to_dto = lambda requirement: ProductRequirementDTO(
+        requirements_to_dto = lambda requirement: ProductRequirementDBO(
             quantity=requirement.quantity,
             article = Article(
                 id=requirement.article.id,
@@ -82,13 +82,13 @@ class ProductRepository:
                 stock=requirement.article.stock
             )
         )
-        return ProductDTO(
+        return ProductDBO(
             id=product.id,
             name=product.name,
             requirements=list(map(requirements_to_dto, product.requirements.all()))
         )
 
-    def _map_requirement(self, product_requirements: List[CreateProductRequirementDTO], created_product: Product):
+    def _map_requirement(self, product_requirements: List[CreateProductRequirementDBO], created_product: Product):
         return map(
           lambda requirement: ProductRequirement(**asdict(requirement), product=created_product),
           product_requirements

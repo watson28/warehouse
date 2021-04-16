@@ -3,18 +3,18 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from .repositories import ArticleRepository, ProductRepository
 from .data_business_objects import (
-    CreateProductDTO,
-    ArticleDTO,
-    ProductAvailability,
-    ProductDTO,
-    ProductRequirementDTO
+    CreateProductDBO,
+    ArticleDBO,
+    ProductAvailabilityDBO,
+    ProductDBO,
+    ProductRequirementDBO
 )
 
 class ArticleBusiness:
     def __init__(self):
         self._article_repository = ArticleRepository()
 
-    def save_articles(self, articles: List[ArticleDTO]):
+    def save_articles(self, articles: List[ArticleDBO]):
         self._article_repository.save_articles(articles)
 
 
@@ -23,16 +23,16 @@ class ProductBusiness:
         self._article_repository = ArticleRepository()
         self._product_repository = ProductRepository()
 
-    def save_products(self, products: List[CreateProductDTO]):
+    def save_products(self, products: List[CreateProductDBO]):
         self.validate_product_names_not_exist(products)
         self.validate_product_requirement_articles_exist(products)
         with transaction.atomic():
             self._product_repository.create_products(products)
 
-    def get_products_availability(self) -> List[ProductAvailability]:
+    def get_products_availability(self) -> List[ProductAvailabilityDBO]:
         products = self._product_repository.get_products_with_requirement_details()
         return [
-            ProductAvailability(
+            ProductAvailabilityDBO(
                 id=product.id,
                 name=product.name,
                 availability=self._get_product_availability(product.requirements)
@@ -48,12 +48,12 @@ class ProductBusiness:
         except ObjectDoesNotExist as exception:
             raise ProductDoesNotExistError(product_id) from exception
 
-    def validate_product_availability(self, product: ProductDTO):
+    def validate_product_availability(self, product: ProductDBO):
         availability = self._get_product_availability(product.requirements)
         if availability == 0:
             raise ProductNotAvailableError(product.id)
 
-    def validate_product_requirement_articles_exist(self, products: List[CreateProductDTO]):
+    def validate_product_requirement_articles_exist(self, products: List[CreateProductDBO]):
         product_requirements = flat_list([product.requirements for product in products])
         article_ids = set(map(lambda requirement: requirement.article_id, product_requirements))
         (_, no_existing_ids) = self._article_repository.partition_ids_by_existence(article_ids)
@@ -68,10 +68,10 @@ class ProductBusiness:
         if len(existing_names) > 0:
             raise ProductAlreadyExistError(*existing_names)
 
-    def _get_product_availability(self, requirements: List[ProductRequirementDTO]) -> int:
+    def _get_product_availability(self, requirements: List[ProductRequirementDBO]) -> int:
         return min([req.article.stock // req.quantity for req in requirements])
 
-    def _reduce_article_stocks_from_requirements(self, requirements: List[ProductRequirementDTO]):
+    def _reduce_article_stocks_from_requirements(self, requirements: List[ProductRequirementDBO]):
         new_product_articles_stock = {
             requirement.article.id: requirement.article.stock - requirement.quantity
             for requirement in requirements

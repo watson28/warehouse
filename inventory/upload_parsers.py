@@ -1,5 +1,5 @@
 from typing import List
-from .data_business_objects import CreateProductDTO, CreateProductRequirementDTO, ArticleDTO
+from .data_business_objects import CreateProductDBO, CreateProductRequirementDBO, ArticleDBO
 
 class InvalidDataUploadError(Exception):
     def __init__(self, *errors):
@@ -58,39 +58,39 @@ class ArticleUploadParser:
     def __init__(self):
         self._parser = UploadParser()
 
-    def parse(self, data: dict) -> List[ArticleDTO]:
+    def parse(self, data: dict) -> List[ArticleDBO]:
         articles = self._parser.parse_list_field(data, 'inventory', 'root')
         return self._parser.parse_list_items(articles, self._parse_article, 'inventory')
 
-    def _parse_article(self, article, obj_context) -> ArticleDTO:
+    def _parse_article(self, article, obj_context) -> ArticleDBO:
         article_id = self._parser.parse_numeric_field(article, 'art_id', obj_context)
         name = self._parser.parse_string_field(article, 'name', obj_context)
         stock = self._parser.parse_numeric_field(article, 'stock', obj_context)
 
-        return ArticleDTO(id=article_id, name=name, stock=stock)
+        return ArticleDBO(id=article_id, name=name, stock=stock)
 
 
 class ProductUploadParser:
     def __init__(self):
         self._parser = UploadParser()
 
-    def parse(self, data: dict) -> List[CreateProductDTO]:
+    def parse(self, data: dict) -> List[CreateProductDBO]:
         products = self._parser.parse_list_field(data, 'products', 'root')
         return self._parser.parse_list_items(products, self._parse_product, 'products')
 
-    def _parse_product(self, item, obj_context) -> CreateProductDTO:
+    def _parse_product(self, item, obj_context) -> CreateProductDBO:
         name = self._parser.parse_string_field(item, 'name', obj_context)
         requirement_items = self._parser.parse_list_field(item, 'contain_articles', obj_context)
         requirements = self._parser.parse_list_items(requirement_items , self._parse_product_requirement, obj_context)
 
-        return CreateProductDTO(name=name, requirements=requirements)
+        return CreateProductDBO(name=name, requirements=requirements)
 
-    def _parse_product_requirement(self, obj, obj_context) -> CreateProductRequirementDTO:
+    def _parse_product_requirement(self, obj, obj_context) -> CreateProductRequirementDBO:
         article_id = self._parser.parse_numeric_field(obj, 'art_id', obj_context)
         quantity = self._parser.parse_numeric_field(obj, 'amount_of', obj_context)
 
         if quantity <= 0:
             raise InvalidDataUploadError(obj_context, 'quantity', 'expected value greater than 0')
 
-        return CreateProductRequirementDTO(article_id=article_id, quantity=quantity)
+        return CreateProductRequirementDBO(article_id=article_id, quantity=quantity)
         
