@@ -1,0 +1,124 @@
+{
+	"info": {
+		"_postman_id": "ef10454f-838e-45a5-8654-09e723352eb9",
+		"name": "warehouse",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "upload articles",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "Content-Disposition",
+						"value": "attachment; filename=inventory.json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": ""
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/inventory/articles/upload",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"inventory",
+						"articles",
+						"upload"
+					]
+				},
+				"description": "Upload articles using a JSON file"
+			},
+			"response": []
+		},
+		{
+			"name": "Upload products",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Disposition",
+						"value": "attachment; filename=products.json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": ""
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/inventory/products/upload",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"inventory",
+						"products",
+						"upload"
+					]
+				},
+				"description": "Upload products using a JSON file"
+			},
+			"response": []
+		},
+		{
+			"name": "Get products availabilty",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/inventory/products/availability",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"inventory",
+						"products",
+						"availability"
+					]
+				},
+				"description": "Get a list of products and its avaitability depending on the existing articles."
+			},
+			"response": []
+		},
+		{
+			"name": "Sell product",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/inventory/products/7/sell",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"inventory",
+						"products",
+						"7",
+						"sell"
+					]
+				},
+				"description": "Sell a single unit of a product and updates the inventory quantity"
+			},
+			"response": []
+		}
+	]
+}
