@@ -1,5 +1,6 @@
 import json
 from dataclasses import asdict
+from django.http import HttpRequest
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
@@ -19,6 +20,7 @@ from .business_logic import (
 class JSONFileParser(FileUploadParser):
     media_type = 'application/json'
 
+
 class APIVieWithErrorHandling(APIView):
     def handle_exception(self, exc):
         if isinstance(exc, BusinessValidationError):
@@ -26,7 +28,17 @@ class APIVieWithErrorHandling(APIView):
         if isinstance(exc, InvalidDataUploadError):
             return Response({ 'errors': exc.errors }, status=status.HTTP_400_BAD_REQUEST)
 
-        raise exc
+        return super().handle_exception(exc)
+
+
+def read_upload_file_content(request: HttpRequest):
+    file = request.data.get('file')
+    if file is None:
+        raise InvalidDataUploadError('expected key "file" in payload')
+    try:
+        return json.load(file)
+    except json.decoder.JSONDecodeError as exception:
+        raise InvalidDataUploadError(f'Invalid JSON structure. {str(exception)}') from exception
 
 
 class UploadArticlesView(APIVieWithErrorHandling):
@@ -38,7 +50,7 @@ class UploadArticlesView(APIVieWithErrorHandling):
         super().__init__(**kwargs)
 
     def post(self, request):
-        data = json.load(request.data['file'])
+        data = read_upload_file_content(request)
         articles = self._article_upload_parser.parse(data)
         self._article_business.save_articles(articles)
 
@@ -54,7 +66,7 @@ class UploadProductsView(APIVieWithErrorHandling):
         super().__init__(**kwargs)
 
     def post(self, request):
-        data = json.load(request.data['file'])
+        data = read_upload_file_content(request)
         products = self._product_upload_parser.parse(data)
         self._product_business.save_products(products)
 
