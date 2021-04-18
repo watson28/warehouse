@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from dataclasses import asdict
 from rest_framework.views import APIView
 from rest_framework.request import Request
@@ -22,7 +23,7 @@ class JSONFileParser(FileUploadParser):
 
 
 class APIVieWithErrorHandling(APIView):
-    def handle_exception(self, exc):
+    def handle_exception(self, exc: Exception) -> Response:
         if isinstance(exc, BusinessValidationError):
             return Response({ 'errors': [str(exc)] }, status=status.HTTP_400_BAD_REQUEST)
         if isinstance(exc, InvalidDataUploadError):
@@ -31,7 +32,7 @@ class APIVieWithErrorHandling(APIView):
         return super().handle_exception(exc)
 
 
-def read_upload_file_content(request: Request):
+def read_upload_file_content(request: Request) -> dict:
     file = request.data.get('file')
     if file is None:
         raise InvalidDataUploadError('expected key "file" in payload')
@@ -44,12 +45,12 @@ def read_upload_file_content(request: Request):
 class UploadArticlesView(APIVieWithErrorHandling):
     parser_classes = [JSONFileParser]
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         self._article_upload_parser = ArticleUploadParser()
         self._article_business = ArticleBusiness()
         super().__init__(**kwargs)
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         data = read_upload_file_content(request)
         articles = self._article_upload_parser.parse(data)
         self._article_business.save_articles(articles)
@@ -60,12 +61,12 @@ class UploadArticlesView(APIVieWithErrorHandling):
 class UploadProductsView(APIVieWithErrorHandling):
     parser_classes = [JSONFileParser]
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         self._product_upload_parser = ProductUploadParser()
         self._product_business = ProductBusiness()
         super().__init__(**kwargs)
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         data = read_upload_file_content(request)
         products = self._product_upload_parser.parse(data)
         self._product_business.save_products(products)
@@ -74,11 +75,11 @@ class UploadProductsView(APIVieWithErrorHandling):
 
 
 class ProductsAvailabilityView(APIVieWithErrorHandling):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         self._product_business = ProductBusiness()
         super().__init__(**kwargs)
 
-    def get(self,request):
+    def get(self,request: Request) -> Response:
         products_availability = self._product_business.get_products_availability()
 
         return Response(
@@ -88,11 +89,11 @@ class ProductsAvailabilityView(APIVieWithErrorHandling):
 
 
 class SellProductView(APIVieWithErrorHandling):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         self._product_business = ProductBusiness()
         super().__init__(**kwargs)
 
-    def post(self, request, product_id):
+    def post(self, request: Request, product_id: int) -> Response:
         self._product_business.sell_product(product_id)
 
         return Response(status=status.HTTP_200_OK)

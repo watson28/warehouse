@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Iterable, Any
 from dataclasses import asdict
 from django.db import transaction
 
@@ -12,14 +12,14 @@ from .data_business_objects import (
 )
 
 class ArticleRepository:
-    def partition_ids_by_existence(self, article_ids: List[int]):
+    def partition_ids_by_existence(self, article_ids: Iterable[int]) -> Tuple[List[int], List[int]]:
         queryset_existing_ids = Article.objects.filter(id__in=article_ids).values('id')
         existing_ids = list(map(lambda qs: qs['id'], queryset_existing_ids))
         no_existing_ids = list(filter(lambda id: id not in existing_ids, article_ids))
 
         return (existing_ids, no_existing_ids)
 
-    def save_articles(self, articles: List[ArticleDBO]):
+    def save_articles(self, articles: List[ArticleDBO]) -> None:
         article_models = list(map(lambda article: Article(**asdict(article)),articles))
         article_ids = list(map(lambda article: article.id, articles))
         (existing_ids, no_existing_ids) = self.partition_ids_by_existence(article_ids)
@@ -30,20 +30,20 @@ class ArticleRepository:
             Article.objects.bulk_update(existing_articles, fields=['name', 'stock'])
             Article.objects.bulk_create(not_existing_articles)
 
-    def update_articles_stock(self, new_article_stocks: dict):
+    def update_articles_stock(self, new_article_stocks: dict) -> None:
         articles = [Article(id=id, stock=stock) for (id, stock) in new_article_stocks.items()]
         Article.objects.bulk_update(articles, fields=['stock'])
 
 
 class ProductRepository:
-    def partition_names_by_existence(self, product_names: List[str]):
+    def partition_names_by_existence(self, product_names: Iterable[str]) -> Tuple[List[str], List[str]]:
         queryset_existing_names = Product.objects.filter(name__in=product_names).values('name')
         existing_names = list(map(lambda qs: qs['name'], queryset_existing_names))
         no_existing_names = list(filter(lambda name: name not in existing_names, product_names))
 
         return (existing_names, no_existing_names)
 
-    def create_products(self, products: List[CreateProductDBO]):
+    def create_products(self, products: List[CreateProductDBO]) -> None:
         product_models = map(lambda p: Product(name=p.name), products)
 
         with transaction.atomic():
@@ -65,7 +65,7 @@ class ProductRepository:
 
         return list(map(self._product_with_requirements_to_dto, products))
 
-    def get_product_with_requirement_details(self, product_id: int):
+    def get_product_with_requirement_details(self, product_id: int) -> ProductDBO:
         product = Product.objects \
             .prefetch_related('requirements') \
             .prefetch_related('requirements__article') \
@@ -73,7 +73,7 @@ class ProductRepository:
 
         return self._product_with_requirements_to_dto(product)
 
-    def _product_with_requirements_to_dto(self, product: Product):
+    def _product_with_requirements_to_dto(self, product: Product) -> ProductDBO:
         requirements_to_dto = lambda requirement: ProductRequirementDBO(
             quantity=requirement.quantity,
             article = ArticleDBO(
@@ -88,12 +88,16 @@ class ProductRepository:
             requirements=list(map(requirements_to_dto, product.requirements.all()))
         )
 
-    def _map_requirement(self, product_requirements: List[CreateProductRequirementDBO], created_product: Product):
+    def _map_requirement(
+        self,
+        product_requirements: List[CreateProductRequirementDBO],
+        created_product: Product
+    ) -> Iterable[ProductRequirement]:
         return map(
           lambda requirement: ProductRequirement(**asdict(requirement), product=created_product),
           product_requirements
         )
 
 
-def flat_list(list_groups):
+def flat_list(list_groups: Iterable[Iterable[Any]]) -> Iterable[Any]:
     return [item for group in list_groups for item in group]
