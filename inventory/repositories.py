@@ -76,7 +76,7 @@ class ProductRepository:
     def _product_with_requirements_to_dto(self, product: Product):
         requirements_to_dto = lambda requirement: ProductRequirementDBO(
             quantity=requirement.quantity,
-            article = Article(
+            article = ArticleDBO(
                 id=requirement.article.id,
                 name=requirement.article.name,
                 stock=requirement.article.stock

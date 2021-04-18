@@ -1,7 +1,7 @@
 import json
 from dataclasses import asdict
-from django.http import HttpRequest
 from rest_framework.views import APIView
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from rest_framework import status
@@ -31,7 +31,7 @@ class APIVieWithErrorHandling(APIView):
         return super().handle_exception(exc)
 
 
-def read_upload_file_content(request: HttpRequest):
+def read_upload_file_content(request: Request):
     file = request.data.get('file')
     if file is None:
         raise InvalidDataUploadError('expected key "file" in payload')
