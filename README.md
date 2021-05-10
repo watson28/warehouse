@@ -39,5 +39,6 @@ The Application uses the [Django](https://www.djangoproject.com/) web framework.
 
 ## Future improvements
 - Add testing
-- Configure static typing check
+- ~~Configure static typing check~~
+- Add pipeline
 - Add simple frontend
